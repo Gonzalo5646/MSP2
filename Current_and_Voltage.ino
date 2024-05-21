@@ -1,9 +1,6 @@
 const double scale_factor = 0.185; // 20A 100 mV/
 float current_sensor_voltage = 0.00;
 double current = 0;
-double power = 0;
-float energy = 0;
-float twosec_energy = 0;
 float current_sensor_value = 0;
 int cycle_count = 10000;
 float elapsed_time = 0;
@@ -64,9 +61,6 @@ void loop() {
   long nu = millis();
   elapsed_time = (nu - current_milli) / 1000.0; // outputs in seconds
 
-  // Calculate energy (current * time / 3600 to convert to Ah)
-  twosec_energy = (current * elapsed_time) / 3600.0;
-  energy += twosec_energy; // accumulate energy in Ah
 
   // Show results
   Serial.print("Voltage:   ");
@@ -81,9 +75,6 @@ void loop() {
   Serial.print(current * 1000);
   Serial.println(" mA");
 
-  Serial.print("Energy:    ");
-  Serial.print(energy);
-  Serial.println(" Ah");
 }
 
 double calibrateZeroPoint() { // Function Definiation 
