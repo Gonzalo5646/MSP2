@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include "usart.h"
 
-// Define pin 
+// Define pin
 #define CHARGE_PIN PD5       
 #define DISCHARGE_PIN PD3    
 #define ANALOG_PIN PC0       
