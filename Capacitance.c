@@ -2,6 +2,7 @@
 #include <avr/interrupt.h>
 #include <util/delay.h>
 #include <stdio.h>
+#include "usart.h"
 
 // Define pin 
 #define CHARGE_PIN PD5       
@@ -18,10 +19,6 @@ volatile uint32_t ms_counter = 0; // Millisecond counter
 // Function prototypes
 void initADC();
 uint16_t readADC(uint8_t channel);
-void initUSART();
-void USART_Transmit(char data);
-void printString(const char *str);
-void printLong(long value);
 void initTimer1(void);
 uint32_t millis(void);
 
@@ -29,7 +26,7 @@ int main(void) {
     DDRD |= (1 << CHARGE_PIN);   // Set charge pin as output
     DDRD &= ~(1 << DISCHARGE_PIN); // Set discharge pin as input
 
-    initUSART();
+    uart_init();
     initADC();
     initTimer1();
     sei(); 
@@ -47,16 +44,16 @@ int main(void) {
         elapsedTime = millis() - startTime;
         microFarads = ((float)elapsedTime / RESISTOR_VALUE) * 1000.0;
 
-        printLong(elapsedTime);
-        printString(" mS    ");
+        printf(elapsedTime);
+        printf(" mS    ");
 
         if (microFarads > 1) {
-            printLong((long)microFarads);
-            printString(" microFarads\n");
+            printf((long)microFarads);
+            printf(" microFarads\n");
         } else {
             nanoFarads = microFarads * 1000.0;
-            printLong((long)nanoFarads);
-            printString(" nanoFarads\n");
+            printf((long)nanoFarads);
+            printf(" nanoFarads\n");
         }
 
         PORTD &= ~(1 << CHARGE_PIN); // Set charge pin low
@@ -83,32 +80,6 @@ uint16_t readADC(uint8_t channel) {
     return ADC;
 }
 
-void initUSART() {
-    // Set baud rate
-    uint16_t ubrr = 103; // 9600 baud for 16MHz
-    UBRR0H = (unsigned char)(ubrr>>8);
-    UBRR0L = (unsigned char)ubrr;
-
-    UCSR0B = (1 << RXEN0) | (1 << TXEN0);    // Enable receiver and transmitter
-    UCSR0C = (1 << UCSZ01) | (1 << UCSZ00);  // Set frame format: 8 data bits, 1 stop bit
-}
-
-void USART_Transmit(char data) {
-    while (!(UCSR0A & (1 << UDRE0))); // Wait for empty transmit buffer
-    UDR0 = data; // Put data into buffer, sends the data
-}
-
-void printString(const char *str) {
-    while (*str) {
-        USART_Transmit(*str++);
-    }
-}
-
-void printLong(long value) {
-    char buffer[10];
-    sprintf(buffer, "%ld", value);
-    printString(buffer);
-}
 
 void initTimer1(void) {
     TCCR1B |= (1 << WGM12); // Configure timer 1 for CTC mode
